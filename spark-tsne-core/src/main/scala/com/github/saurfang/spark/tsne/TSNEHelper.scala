@@ -34,23 +34,27 @@ object TSNEHelper {
              gains: DenseMatrix[Double],
              iteration: Int,
              param: TSNEParam): DenseMatrix[Double] = {
+
     import param._
     val momentum = if (iteration <= t_momentum) initial_momentum else final_momentum
     gains.foreachPair {
       case ((i, j), old_gain) =>
         val new_gain = math.max(min_gain,
-          if ((dY.unsafeValueAt(i, j) > 0.0) != (iY.unsafeValueAt(i, j) > 0.0))
+          if ((dY(i, j) > 0.0) != (iY(i, j) > 0.0))
             old_gain + 0.2
           else
             old_gain * 0.8
         )
-        gains.unsafeUpdate(i, j, new_gain)
+        gains.update(i, j, new_gain)
 
-        val new_iY = momentum * iY.unsafeValueAt(i, j) - eta * new_gain * dY.unsafeValueAt(i, j)
-        iY.unsafeUpdate(i, j, new_iY)
+        val new_iY = momentum * iY(i, j) - eta * new_gain * dY(i, j)
+        iY.update(i, j, new_iY)
 
-        Y.unsafeUpdate(i, j, Y.unsafeValueAt(i, j) + new_iY) // Y += iY
+        Y.update(i, j, Y(i, j) + new_iY) // Y += iY
     }
-    Y := Y(*, ::) - (mean(Y(::, *)): DenseMatrix[Double]).toDenseVector
+    val t_Y: DenseVector[Double] = mean(Y(::, *)).t
+    val y_sub = Y(*, ::)
+    Y := y_sub - t_Y
+
   }
 }

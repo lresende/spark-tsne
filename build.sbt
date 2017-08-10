@@ -1,5 +1,7 @@
 import Common._
 
+scalaVersion := "2.11.8"
+
 lazy val root = Project("spark-tsne", file(".")).
   settings(commonSettings: _*).
   aggregate(core, vis, examples)
